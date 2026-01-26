@@ -10,6 +10,9 @@ class Logic:
             [0,0,0,0,0],
             [0,0,0,0,0]]
         
+        #Stack used to for "undo"
+        self.move_stack = []
+        
         #Keep track of the current number to be placed and the score
         self.cur_num = 1
         self.score = 0
@@ -20,7 +23,6 @@ class Logic:
 
         #Saves the coords the last number was placed on. Used for invalid move calculations
         self.last_coords = [-1 , -1]
-
 
     def get_grid_number(self, x, y):
         """Returns number given a grid coordinate"""
@@ -35,6 +37,8 @@ class Logic:
         self.last_coords = coords
         self.matrix[int(coords[0])][int(coords[1])] = self.cur_num
         self.cur_num = self.cur_num + 1
+        self.move_stack.append(coords)
+
 
     def make_move(self, user_input):
         """Makes the move for the user"""
@@ -77,3 +81,18 @@ class Logic:
     def get_score(self):
         """Return current score"""
         return self.score
+    
+
+    def undo(self):
+        if(self.cur_num == 1):
+            print("You haven't made any moves yet")
+        else:
+            self.matrix[self.last_coords[0]][self.last_coords[1]] = 0
+            self.move_stack.pop()
+            try:
+                self.last_coords = self.move_stack[-1]
+            except IndexError:
+                self.last_coords = [-1,-1]
+            self.cur_num = self.cur_num - 1
+        
+        
