@@ -33,7 +33,7 @@ class Interface:
         """Receive and validate the user input"""
         while True:
             print(f'Score: {self.logic.get_score()}')
-            print("save: Saves current game, quit: Closes games")
+            print("save: Saves current game, quit: Closes games, undo: Undo last move")
             user_in = input(f'Give your next input in this format "row(space)column" (Current Number: {self.logic.get_cur_num()}): ')
             user_in = user_in.split()
 
@@ -46,6 +46,12 @@ class Interface:
                 self.IO.save_game(self.logic.matrix, self.logic.cur_num, self.logic.score, self.logic.last_coords)
                 print("Game saved")
                 return('exit')
+            
+            if 'undo' in user_in:
+                clear_console()
+                self.logic.undo()
+                self.grid()
+                continue
 
             #Input needs to include 2 numbers
             if len(user_in) != 2:
