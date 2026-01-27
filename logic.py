@@ -37,7 +37,6 @@ class Logic:
         self.last_coords = coords
         self.matrix[int(coords[0])][int(coords[1])] = self.cur_num
         self.cur_num = self.cur_num + 1
-        self.move_stack.append(coords)
 
 
     def make_move(self, user_input):
@@ -52,12 +51,14 @@ class Logic:
         """Check if move is valid"""
         #Check if this is first move. Can be placed anywhere on grid
         if(self.last_coords[0] == -1):
+            self.move_stack.append([new_coords, 0])
             self.update_matrix(new_coords)
         else:
             #Check if new coords are only one block away from last number placed
             if(abs(new_coords[0] - self.last_coords[0]) == 1 or abs(new_coords[1] - self.last_coords[1]) == 1):
                 #Check if number was already placed there
                 if(self.matrix[new_coords[0]][new_coords[1]] == 0):
+                    self.move_stack.append([new_coords, 0])
                     self.update_score(new_coords)
                     self.update_matrix(new_coords)
                 else:
@@ -77,6 +78,7 @@ class Logic:
         """Update the score if the user made a diagonal move"""
         if(abs(new_coords[0] - self.last_coords[0]) == 1 and abs(new_coords[1] - self.last_coords[1]) == 1):       
             self.score = self.score + 1
+            self.move_stack[-1][1] = 1
 
     def get_score(self):
         """Return current score"""
@@ -87,10 +89,12 @@ class Logic:
         if(self.cur_num == 1):
             print("You haven't made any moves yet")
         else:
+            if(self.move_stack[-1][1] == 1):
+                self.score = self.score - 1
             self.matrix[self.last_coords[0]][self.last_coords[1]] = 0
             self.move_stack.pop()
             try:
-                self.last_coords = self.move_stack[-1]
+                self.last_coords = self.move_stack[-1][0]
             except IndexError:
                 self.last_coords = [-1,-1]
             self.cur_num = self.cur_num - 1
