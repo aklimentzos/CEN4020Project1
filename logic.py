@@ -61,12 +61,7 @@ class Logic:
                     self.move_stack.append([new_coords, 0])
                     self.update_score(new_coords)
                     self.update_matrix(new_coords)
-                else:
-                    self.check = "Fail"
-                    self.fail_reason = "Invalid Move"
-            else:
-                self.check = "Fail"
-                self.fail_reason = "Invalid Move"
+                
         
     def get_check(self):
         """Return the fail condition and the reason why"""
@@ -99,4 +94,16 @@ class Logic:
                 self.last_coords = [-1,-1]
             self.cur_num = self.cur_num - 1
         
+    def clear_board(self):
+        """Clears the board and resets all variables"""
+        for i in self.matrix:
+            for j in range(len(i)):
+                if(i[j] != 1):
+                    i[j] = 0
+
+        self.cur_num = 2
+        self.score = 0
+        self.last_coords = [self.move_stack[0][0][0], self.move_stack[0][0][1]]       
+        self.move_stack = []
+
         

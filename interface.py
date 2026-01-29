@@ -40,6 +40,12 @@ class Interface:
             #Quit condition
             if 'quit' in user_in:
                 return('exit')
+
+            if 'clear' in user_in:
+                self.logic.clear_board()
+                clear_console() 
+                self.grid()
+                continue
             
             #Save condition
             if 'save' in user_in:
