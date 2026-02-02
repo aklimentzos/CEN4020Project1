@@ -98,6 +98,8 @@ class Interface:
                 self.grid()
                 print("Game finished")
                 print(f"Final Score: {self.logic.get_score()}")
+                username = input("Congratulations! You've completed the game! Please enter your name for the high score list: ")
+                self.IO.save_completed_game(username, self.logic.get_score(), self.logic.matrix)
                 break
 
             clear_console()

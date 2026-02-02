@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import os
+import datetime
 
 class IO:
     """IO object for managing save file"""
@@ -8,8 +9,10 @@ class IO:
         """Genrate base filepath and import logic object"""
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.file_path = os.path.join(self.base_dir, "data.json")
+        self.completed_path = os.path.join(self.base_dir, "high_scores.json")
         self.logic = logic
         self.data = {}
+        self.completed_data = {}
 
     def file_initalize(self):
         """Check if data file exists and if a save game exists"""
@@ -49,3 +52,23 @@ class IO:
         dump = {"new_game": False, "d_matrix": matrix, "d_cur_num": cur_num, "d_score":score, "d_last_coords":last_coords}
         with open(self.file_path, "w") as f:
             json.dump(dump ,f)
+
+    def save_completed_game(self, username, score, matrix):
+        """Saves completed game to high score list"""
+        #Load existing high score data
+        if Path(self.completed_path).is_file():
+            with open(self.completed_path, 'r') as f:
+                self.completed_data = json.load(f)
+        else:
+            self.completed_data = {}
+
+        #Create high score list if it does not exist
+        if "high_scores" not in self.completed_data:
+            self.completed_data["high_scores"] = []
+
+        #Append new high score
+        self.completed_data["high_scores"].append({"username": username, "score": score, "matrix": matrix, "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")})
+        
+        #Save updated high score list
+        with open(self.completed_path, "w") as f:
+            json.dump(self.completed_data ,f)
