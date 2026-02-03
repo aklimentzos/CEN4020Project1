@@ -1,10 +1,14 @@
-from logic import Logic
-from interface import Interface
+from level_1.level_1_logic import Level1State
+from level_1.level_1_logic import Level1Controller
+import pygame
+import sys
+from level_1.level_1_ui import Level1UI
 
-def run():
-    """Initialize interface object and run game"""
-    game = Interface()
-    game.run_game()
+def main():
+    pygame.init()
+    
+    myui = Level1UI()
+    myui.display()
 
-
-run()
+if __name__ == "__main__":
+    main()
