@@ -37,13 +37,20 @@ Tools: VS Code, PyGame
 
 
 6. FILE STRUCTURE
+   
 Proj1/
- ├── main.py/
- ├── ui_elements.py/
- └── ReadMe.txt
- ├──level_1/
+
+   ├── main.py/
+ 
+   ├── ui_elements.py/
+ 
+   └── ReadMe.txt
+ 
+ level_1/
+ 
    ├── level_1_logic.py/
-   └──level_1_ui.oy
+   
+   └──level_1_ui.py
    
 
 
