@@ -1,7 +1,4 @@
-from level_1.level_1_logic import Level1State
-from level_1.level_1_logic import Level1Controller
-from level_2.level_2_logic import Level2State
-from level_2.level_2_ui import Level2UI
+from level_2.level_2_logic import Level2Controller
 from ui_elements import InputBox
 from ui_elements import Button
 from ui_elements import TextBox
@@ -9,27 +6,22 @@ from ui_elements import Grid
 import pygame
 import sys
 
-
-class Level1UI:
-    def __init__(self):
-        self.board_width = 900
-        self.board_height = 700
+class Level2UI:
+    def __init__(self, level2_state):
+        self.board_width = 1000
+        self.board_height = 750
         self.font = pygame.font.Font(None, 32)
-        self.inputbox_username = InputBox(600, 50, 220, 40, self.font, placeholder="Enter name...")
-        self.button_save = Button(600, 90, 100, 40, "Save", self.font)
-        self.textbox_error = TextBox(100, 600, "", self.font, visible= False)
-        self.gamestate = Level1State()
-        self.game_cont = Level1Controller(self.gamestate)
-        self.grid_main = Grid(5, 90, 50, 50, self.game_cont.get_matrix(), self.font)
-        
-        
-        
+        self.inputbox_username = InputBox(750, 50, 220, 40, self.font, placeholder="Enter name...")
+        self.button_save = Button(750, 90, 100, 40, "Save", self.font)
+        self.textbox_error = TextBox(100, 700, "", self.font, visible= False)
+        self.gamestate = level2_state
+        self.game_cont = Level2Controller(self.gamestate)
+        self.grid_main = Grid(7, 90, 50, 50, self.game_cont.get_matrix(), self.font)
     
     def display(self):
-        pygame.init()
         
         screen = pygame.display.set_mode((self.board_width, self.board_height))
-        pygame.display.set_caption("Level 1")
+        pygame.display.set_caption("Level 2")
 
         clock = pygame.time.Clock()
 
@@ -55,10 +47,7 @@ class Level1UI:
 
                 if self.gamestate.cur_num == 26:
                     #self.game_cont.save_completed_game("test", self.gamestate.score, self.gamestate.matrix)
-                    level2_state = Level2State(self.gamestate)
-                    level2_ui = Level2UI(level2_state)
-                    level2_ui.display()
-                    return
+                    pass
                          
             screen.fill((245, 245, 245))
             self.button_save.draw(screen)
