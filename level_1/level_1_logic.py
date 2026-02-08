@@ -3,6 +3,7 @@ import json
 import os
 import datetime
 from pathlib import Path
+import random
 
 class Level1State:
     """Class running the logic for the game"""
@@ -27,7 +28,16 @@ class Level1State:
 
         #Saves the coords the last number was placed on. Used for invalid move calculations
         self.last_coords = [-1 , -1]
-        
+
+        self.random_start()
+
+    def random_start(self):
+        """Randomly place the first number in a valid position"""
+        x = random.randint(0, 4)
+        y = random.randint(0, 4)
+        self.matrix[x][y] = 1
+        self.last_coords = [x, y]
+        self.cur_num = 2
 
 class Level1Controller:
     def __init__(self, state : Level1State):
@@ -51,7 +61,6 @@ class Level1Controller:
         "returns reason why move failed"
         return self.state.fail_reason
         
-
     def update_matrix(self, coords):
         """Updates the matrix with the new number"""
         self.state.last_coords = coords
@@ -93,10 +102,9 @@ class Level1Controller:
     def get_score(self):
         """Return current score"""
         return self.state.score
-    
 
     def undo(self):
-        if(self.state.cur_num == 1):
+        if(self.state.cur_num == 2):
             return False
         else:
             if(self.state.move_stack[-1][2] == 1):
@@ -108,41 +116,43 @@ class Level1Controller:
             except IndexError:
                 self.state.last_coords = [-1,-1]
             self.state.cur_num = self.state.cur_num - 1
+            return True
     
-    
+    def clear_board(self):
+        while self.undo():
+            print("clearing")
+
     def load_game(self, path):
         """Loads game from a save file. returns True if successfully loaded, False otherwise and saves error message"""
         required_keys = {"level", "matrix", "cur_num", "score", "last_coords", "move_stack"}
         p = Path(path)
         if not p.is_file() or p.suffix.lower() != ".json":
             self.err_msg = "Not a valid save file."
-            return True
+            return None
         
         try:
             with p.open("r", encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError:
             self.err_msg = "Save file is not valid JSON."
-            return False
+            return None
         
         if not isinstance(data, dict):
             self.err_msg = "Save file has invalid format."
-            return False
+            return None
         
         if not required_keys.issubset(data.keys()):
             self.err_msg = "Save file does not match expected schema."
-            return False
+            return None
         
-        if data["level"] == 2:
-            self.err_msg = "Wrong level save file"
-            return False
+        save_level = data["level"]
         
         self.state.matrix = data["matrix"]
         self.state.cur_num = data["cur_num"]
         self.state.score = data["score"]
         self.state.last_coords = data["last_coords"]
         self.state.move_stack = data["move_stack"]
-        return True
+        return save_level
         
     def save_game(self, path):
         """Saves current game"""
@@ -157,33 +167,13 @@ class Level1Controller:
 
     def save_completed_game(self, username, score, matrix):
         """Saves completed game to high score list"""
-        save_complete_path = self.base_dir / "completed_games.json"
-        # If completed_games.json exists, append to it
-        if save_complete_path.is_file():
-            with open(self.base_dir / "completed_games.json", "r") as f:
-                completed_games = json.load(f)
-
-            if isinstance(completed_games, dict):
-                completed_games = [completed_games]
-
-            completed_games.append({
-                "username": username,
-                "level": 1,
-                "score": score,
-                "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "matrix": matrix
-            })
-
-            with open(self.base_dir / "completed_games.json", "w") as f:
-                json.dump(completed_games, f)
-        # If it does not exist, create it and add the first entry
-        else:
-            completed_data = {
-                "username": username,
-                "level": 1,
-                "score": score,
-                "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "matrix": matrix
-            }
-            with open(self.base_dir / "completed_games.json", "w") as f:
-                json.dump(completed_data, f)
+        save_complete_path = self.base_dir / "completed_games" / f"{username}_level1_completed.json"
+        completed_data = {
+            "username": username,
+            "level": 1,
+            "score": score,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "matrix": matrix
+        }
+        with open(save_complete_path, "w") as f:
+            json.dump(completed_data, f)

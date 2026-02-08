@@ -65,18 +65,22 @@ class InputBox:
             cy1 = self.rect.y + 6
             cy2 = self.rect.y + self.rect.h - 6
             pygame.draw.line(screen, (20, 20, 20), (cursor_x, cy1), (cursor_x, cy2), 2)
-         
+    
+    # obtains text input from textbox
+    @property
+    def value(self):
+        return self.text
          
            
 class Button:
-    def __init__(self, x, y, w, h, text, font, callback=None):
+    def __init__(self, x, y, w, h, text, font, callback=None, visible=True):
         self.rect = pygame.Rect(x, y, w, h)
         self.text = text
         self.font = font
         self.callback = callback
-
         self.hovered = False
         self.enabled = True
+        self.visible = visible
 
     def handle_event(self, event):
         if not self.enabled:
@@ -93,7 +97,13 @@ class Button:
 
         return None
 
+    def set_visible(self, is_visible: bool):
+        self.visible = bool(is_visible)
+
     def draw(self, screen):
+        if not self.visible:
+            return
+        
         if not self.enabled:
             bg = (180, 180, 180)
             fg = (120, 120, 120)
