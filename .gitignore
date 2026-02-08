@@ -13,7 +13,3 @@ venv/
 # OS junk
 .DS_Store
 Thumbs.db
-
-# Saves / runtime files
-*.json
-*.log
