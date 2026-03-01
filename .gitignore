@@ -4,3 +4,6 @@ build/
 dist/
 venv/
 .venv/
+_internal/
+*.spec
+Proj1.exe
