@@ -25,7 +25,7 @@ class Level3UI:
 
         self.button_newgame = Button(270, 750, 210, 40, "New Game", self.font, visible=False)
         self.button_exit = Button(490, 750, 210, 40, "Exit", self.font, visible=False)
-
+        self.button_solve = Button(750, 250, 210, 40, "Solve from Here", self.font)
         self.textbox_error = TextBox(100, 700, "", self.font, visible=False)
 
         self.status_box = TextBox(
@@ -45,7 +45,10 @@ class Level3UI:
         self.current_time_left = self.timer_limit
         self.timer_box = TextBox(600, 20, f"Time: {self.current_time_left}", self.font)
 
+        #Solver setup
         self.solver = Level3Solver(self.game_cont.get_matrix())
+        self.solve_mask = None
+        self.solved = False
 
     def open_file_dialog(self, start_dir="."):
         root = tk.Tk()
@@ -65,76 +68,97 @@ class Level3UI:
         pygame.display.set_caption("Level 3")
         clock = pygame.time.Clock()
 
+        #Flag to ensure we only add the time bonus once when the game is completed
+        bonus_added = False
+
         while True:
-            seconds_passed = (pygame.time.get_ticks() - self.start_ticks) // 1000
-            if seconds_passed >= 1:
-                self.start_ticks = pygame.time.get_ticks()
-                if self.current_time_left > 0:
-                    self.current_time_left -= 1
-                else:
-                    self.gamestate.score = max(0, self.gamestate.score - 1)
-                
-                self.timer_box.set_text(f"Time: {self.current_time_left}")
+            #Flag to check if the game is finished
+            is_finished = self.gamestate.cur_num >= 26
+            if not is_finished:
+                seconds_passed = (pygame.time.get_ticks() - self.start_ticks) // 1000
+                if seconds_passed >= 1:
+                    self.start_ticks = pygame.time.get_ticks()
+                    if self.current_time_left > 0:
+                        self.current_time_left -= 1
+                    else:
+                        self.gamestate.score = max(0, self.gamestate.score - 1)
+                    
+                    self.timer_box.set_text(f"Time: {self.current_time_left}")
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
-                coords = self.grid_main.handle_event(event)
-                if coords:
-                    # Require username before moves
-                    if not self.username_locked:
-                        if self.inputbox_username.value == "":
-                            self.textbox_error.set_text("Please enter a username before making a move.")
-                            self.textbox_error.set_visible(True)
-                            continue
-                        else:
-                            self.final_username = self.inputbox_username.value
-                            self.username_locked = True
-                            self.textbox_error.set_visible(False)
+                #Block that only runs if the game isn't finished yet
+                if not is_finished:
+                    coords = self.grid_main.handle_event(event)
+                    if coords:
+                        # Require username before moves
+                        if not self.username_locked:
+                            if self.inputbox_username.value == "":
+                                self.textbox_error.set_text("Please enter a username before making a move.")
+                                self.textbox_error.set_visible(True)
+                                continue
+                            else:
+                                self.final_username = self.inputbox_username.value
+                                self.username_locked = True
+                                self.textbox_error.set_visible(False)
 
-                    # Try move
-                    if self.game_cont.make_move(coords):
-                        self.grid_main.set_matrix(self.game_cont.get_matrix())
-                        self.textbox_error.set_visible(False)
-                        if self.game_cont.is_blocked():
+                        # Try move
+                        if self.game_cont.make_move(coords):
+                            self.grid_main.set_matrix(self.game_cont.get_matrix())
+                            self.textbox_error.set_visible(False)
+                            if self.game_cont.is_blocked():
                                 self.textbox_error.set_text("Blocked! No moves left.")
                                 self.textbox_error.set_visible(True)
-                                self.game_cont.clear_board()
-                                full_solution = self.solver.find_best_solution() 
+                                self.game_cont.clear_board() 
+                                
+                                # Unpack the tuple
+                                full_solution, mask = self.solver.find_best_solution() 
+                                
                                 if full_solution:
+                                    self.solve_mask = mask
+                                    self.gamestate.cur_num = 26 # End the game
+                                    self.solved = True
                                     self.grid_main.set_matrix(full_solution)
-                        pygame.mixer.Sound.play(
-                            pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "successful_move_sound.mp3"))
-                        ).set_volume(0.5)
-                    else:
-                        self.textbox_error.set_text(self.game_cont.get_fail())
-                        self.textbox_error.set_visible(True)
-                        pygame.mixer.Sound.play(
-                            pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "invalid_move_sound.mp3"))
-                        ).set_volume(0.5)
 
-                self.inputbox_username.handle_event(event)
+                            pygame.mixer.Sound.play(
+                                pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "successful_move_sound.mp3"))
+                            ).set_volume(0.5)
+                        else:
+                            self.textbox_error.set_text(self.game_cont.get_fail())
+                            self.textbox_error.set_visible(True)
+                            pygame.mixer.Sound.play(
+                                pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "invalid_move_sound.mp3"))
+                            ).set_volume(0.5)
 
-                # Save
-                if self.button_save.handle_event(event) == 'clicked':
-                    if self.inputbox_username.value == "":
-                        self.textbox_error.set_text("Please enter a username before saving.")
-                        self.textbox_error.set_visible(True)
-                    else:
-                        self.game_cont.save_game(
-                            str(self.game_cont.base_dir / "saves" / f"{self.inputbox_username.value}_level3_save.json")
-                        )
+                    # Solve button event
+                    if self.button_solve.handle_event(event) == 'clicked':
+                        if not is_finished:
+                            # We find a solution starting from the highest number currently on the board
+                            full_solution, mask = self.solver.find_best_solution()
+                            
+                            if full_solution:
+                                self.solve_mask = mask
+                                self.gamestate.matrix = full_solution  
+                                self.gamestate.cur_num = 26            
+                                self.solved = True                     
+                                self.grid_main.set_matrix(full_solution)
+                                self.textbox_error.set_text("Puzzle solved from your current position!")
+                                self.textbox_error.set_visible(True)
+                            else:
+                                self.textbox_error.set_text("No valid solution found from this state.")
+                                self.textbox_error.set_visible(True)
 
-                # Undo
-                if self.button_undo.handle_event(event) == 'clicked':
-                    self.game_cont.undo()
-                    self.grid_main.set_matrix(self.game_cont.get_matrix())
+                    # Undo
+                    if self.button_undo.handle_event(event) == 'clicked':
+                        self.game_cont.undo()
+                        self.grid_main.set_matrix(self.game_cont.get_matrix())
 
-                # Clear
-                if self.button_clear.handle_event(event) == 'clicked':
-                    self.game_cont.clear_board()
-                    self.grid_main.set_matrix(self.game_cont.get_matrix())
+                    # Clear
+                    if self.button_clear.handle_event(event) == 'clicked':
+                        self.game_cont.clear_board()
+                        self.grid_main.set_matrix(self.game_cont.get_matrix())
 
                 # Load
                 if self.button_load.handle_event(event) == 'clicked':
@@ -155,9 +179,23 @@ class Level3UI:
                             return ("switch_to_level2", path)
                         elif level == 1:
                             return ("switch_to_level1", path)
+                # Save
+                if self.button_save.handle_event(event) == 'clicked':
+                    if self.inputbox_username.value == "":
+                        self.textbox_error.set_text("Please enter a username before saving.")
+                        self.textbox_error.set_visible(True)
+                    else:
+                        self.game_cont.save_game(
+                            str(self.game_cont.base_dir / "saves" / f"{self.inputbox_username.value}_level3_save.json")
+                        )
 
                 # Completed Level 3
-                if self.gamestate.cur_num == 26:
+                if is_finished and not self.solved:
+                    if not bonus_added:
+                        # Add remaining time to score
+                        self.gamestate.score += self.current_time_left
+                        bonus_added = True
+
                     if self.inputbox_username.value == "":
                         self.textbox_error.set_text("Please enter a username before finishing.")
                         self.textbox_error.set_visible(True)
@@ -173,19 +211,13 @@ class Level3UI:
                         self.button_exit.set_visible(True)
 
                     if self.button_newgame.handle_event(event) == 'clicked':
-                        # Choose where "New Game" restarts.
-                        # Option A: restart Level 1 (same behavior as your Level 2 UI)
-                        from level_1.level_1_logic import Level1State
-                        from level_1.level_1_ui import Level1UI
-                        level1_state = Level1State()
-                        level1_ui = Level1UI(level1_state)
-                        level1_ui.display()
-                        return
+                        return ("switch_to_level1", None)
 
                     if self.button_exit.handle_event(event) == 'clicked':
                         pygame.quit()
                         sys.exit()
 
+                self.inputbox_username.handle_event(event)
             self.status_box.set_text(f"Score: {self.gamestate.score}       Cur Num: {self.gamestate.cur_num}")
 
             screen.fill((245, 245, 245))
@@ -199,7 +231,8 @@ class Level3UI:
             self.inputbox_username.draw(screen)
             self.textbox_error.draw(screen)
             self.status_box.draw(screen)
-            self.grid_main.draw(screen)
+            self.button_solve.draw(screen)
+            self.grid_main.draw(screen, mask=getattr(self, 'solve_mask', None))
 
             pygame.display.flip()
             clock.tick(60)

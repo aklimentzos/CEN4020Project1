@@ -9,6 +9,7 @@ class Level1Solver:
             (1, 1, True), (1, -1, True), (-1, 1, True), (-1, -1, True)
         ]
         self.best_grid = None
+        self.original_grid = [row[:] for row in grid]
         self.max_diagonal_score = -1
         self.found_count = 0    
 
@@ -30,7 +31,7 @@ class Level1Solver:
                 self.max_diagonal_score = current_score
                 self.best_grid = [row[:] for row in self.grid]
             
-            # Optional: Stop after finding a solution with score 14 or higher
+            # Stop after finding a solution with score 13 or higher
             if current_score >= 13:
                 return True
             return False
@@ -56,21 +57,34 @@ class Level1Solver:
             
         return False
     
-    def get_best_solution(self):
-        # Find where the 1 is located in the grid you passed in
+    def get_best_solution(self,score):
+        # Find the current max number and its position
+        max_num = 0
         start_pos = None
+        
+        # Identify the starting point for the solver
         for r in range(self.SIZE):
             for c in range(self.SIZE):
-                if self.grid[r][c] == 1:
-                    start_pos = (r, c)
-                    break
+                val = self.grid[r][c]
+                if val > 0:
+                    if val > max_num:
+                        max_num = val
+                        start_pos = (r, c)
         
         if not start_pos:
-            return None # Or handle the case where no starting point is set
+            return None 
 
-        # Start recursion from the found position
-        # current_score starts at 0 because no moves have been made yet
-        self.solve(start_pos[0], start_pos[1], 1, 0)
+        #Call the solver with the current max number and score
+        self.solve(start_pos[0], start_pos[1], max_num, score)
         
-        return self.best_grid
-
+        if self.best_grid:
+            # Create the mask for coloring
+            solved_mask = [[0 for _ in range(self.SIZE)] for _ in range(self.SIZE)]
+            for r in range(self.SIZE):
+                for c in range(self.SIZE):
+                    # Only mark cells that were originally empty and are now filled in the best solution
+                    if self.original_grid[r][c] == 0 and self.best_grid[r][c] != 0:
+                        solved_mask[r][c] = 1
+            return self.best_grid, solved_mask
+                    
+        return None, None

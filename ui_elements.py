@@ -199,7 +199,7 @@ class Grid:
         """Returns the pygame.Rect covering the whole grid."""
         return pygame.Rect(self.left, self.top, self.board_px(), self.board_px())
 
-    def draw(self, screen,
+    def draw(self, screen, mask=None,
              bg_color=(245, 245, 245),
              line_color=(30, 30, 30),
              text_color=(20, 20, 20),
@@ -211,6 +211,20 @@ class Grid:
             pygame.draw.rect(screen, bg_color, self.rect())
 
         board_px = self.board_px()
+
+        if mask is not None:
+            highlight_color = (173, 216, 230) # Light Blue
+            for r in range(self.grid_size):
+                for c in range(self.grid_size):
+                    if mask[r][c] == 1:
+                        # Calculate the specific cell area
+                        cell_rect = pygame.Rect(
+                            self.left + c * self.cell_size,
+                            self.top + r * self.cell_size,
+                            self.cell_size,
+                            self.cell_size
+                        )
+                        pygame.draw.rect(screen, highlight_color, cell_rect)
 
         # Grid lines
         for c in range(self.grid_size + 1):

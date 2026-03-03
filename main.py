@@ -87,11 +87,12 @@ def main():
                 level3_state = Level3State(level2_state)
             ui = Level3UI(level3_state, authenticated_user=username)
 
-        result = ui.display()
 
+        result = ui.display()
+        print(f"UI returned: {result}")
         if result == "quit":
             break
-
+        
         # Handle switching between levels via UI return tuples
         if isinstance(result, tuple):
             cmd, payload = result
