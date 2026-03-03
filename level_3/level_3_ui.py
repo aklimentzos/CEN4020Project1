@@ -1,3 +1,4 @@
+from level_3.level_3_solver import Level3Solver
 from level_3.level_3_logic import Level3Controller
 from ui_elements import InputBox, Button, TextBox, Grid
 import pygame
@@ -38,6 +39,14 @@ class Level3UI:
         self.username_locked = False
         self.final_username = ""
 
+        # Timer setup
+        self.timer_limit = 10
+        self.start_ticks = pygame.time.get_ticks()
+        self.current_time_left = self.timer_limit
+        self.timer_box = TextBox(600, 20, f"Time: {self.current_time_left}", self.font)
+
+        self.solver = Level3Solver(self.game_cont.get_matrix())
+
     def open_file_dialog(self, start_dir="."):
         root = tk.Tk()
         root.withdraw()
@@ -57,6 +66,15 @@ class Level3UI:
         clock = pygame.time.Clock()
 
         while True:
+            seconds_passed = (pygame.time.get_ticks() - self.start_ticks) // 1000
+            if seconds_passed >= 1:
+                self.start_ticks = pygame.time.get_ticks()
+                if self.current_time_left > 0:
+                    self.current_time_left -= 1
+                else:
+                    self.gamestate.score = max(0, self.gamestate.score - 1)
+                
+                self.timer_box.set_text(f"Time: {self.current_time_left}")
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -79,6 +97,13 @@ class Level3UI:
                     if self.game_cont.make_move(coords):
                         self.grid_main.set_matrix(self.game_cont.get_matrix())
                         self.textbox_error.set_visible(False)
+                        if self.game_cont.is_blocked():
+                                self.textbox_error.set_text("Blocked! No moves left.")
+                                self.textbox_error.set_visible(True)
+                                self.game_cont.clear_board()
+                                full_solution = self.solver.find_best_solution() 
+                                if full_solution:
+                                    self.grid_main.set_matrix(full_solution)
                         pygame.mixer.Sound.play(
                             pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "successful_move_sound.mp3"))
                         ).set_volume(0.5)
@@ -168,6 +193,7 @@ class Level3UI:
             self.button_undo.draw(screen)
             self.button_clear.draw(screen)
             self.button_newgame.draw(screen)
+            self.timer_box.draw(screen)
             self.button_exit.draw(screen)
             self.button_load.draw(screen)
             self.inputbox_username.draw(screen)

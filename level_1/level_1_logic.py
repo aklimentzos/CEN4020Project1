@@ -5,6 +5,8 @@ import datetime
 from pathlib import Path
 import random
 
+from level_1.level_1_solver import Level1Solver
+
 class Level1State:
     """Class running the logic for the game"""
     def __init__(self):
@@ -179,3 +181,22 @@ class Level1Controller:
         }
         with open(str(save_complete_path), "w") as f:
             json.dump(completed_data, f)
+
+    def is_blocked(self):
+        """Checks if the user has any valid adjacent moves left."""
+        curr_x, curr_y = self.state.last_coords
+        
+        # Level 1 moves: Any adjacent cell (distance of 1)
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                if dx == 0 and dy == 0:
+                    continue
+                
+                nx, ny = curr_x + dx, curr_y + dy
+                
+                # Check if neighbor is within 5x5 bounds
+                if 0 <= nx < 5 and 0 <= ny < 5:
+                    # If any neighbor is empty, we are NOT blocked
+                    if self.state.matrix[nx][ny] == 0:
+                        return False
+        return True

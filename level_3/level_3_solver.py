@@ -62,3 +62,28 @@ class Level3Solver:
             if(self.grid[0][6] == num or self.grid[6][0] == num):
                 return True
         return False
+    
+    def find_best_solution(self):
+        """
+        Setup function to find the starting '1' and initiate 
+        the recursive solve process.
+        """
+        start_x, start_y = -1, -1
+        
+        #Find the coordinates of the number 1 in the 5x5 inner grid
+        for r in range(self.INNER_START, self.INNER_END + 1):
+            for c in range(self.INNER_START, self.INNER_END + 1):
+                if self.grid[r][c] == 1:
+                    start_x, start_y = r, c
+                    break
+            if start_x != -1: break
+
+        # If '1' isn't found, we can't solve it
+        if start_x == -1:
+            return None
+
+        # Start the recursion from step 1
+        if self.solve(start_x, start_y, 1):
+            return self.grid
+            
+        return None

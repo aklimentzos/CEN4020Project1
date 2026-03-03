@@ -1,3 +1,4 @@
+from level_1.level_1_solver import Level1Solver
 from level_1.level_1_logic import Level1State
 from level_1.level_1_logic import Level1Controller
 from level_2.level_2_logic import Level2State
@@ -30,8 +31,21 @@ class Level1UI:
         self.game_cont = Level1Controller(self.gamestate)
         self.grid_main = Grid(5, 90, 50, 50, self.game_cont.get_matrix(), self.font)
         self.username_locked = False
-        self.final_username = ""   
-    
+        self.final_username = ""  
+
+        # Timer setup
+        self.timer_limit = 10
+        self.start_ticks = pygame.time.get_ticks()
+        self.current_time_left = self.timer_limit
+        self.timer_box = TextBox(450, 20, f"Time: {self.current_time_left}", self.font)
+        
+        # Pre-calculate the best solution for this specific starting '1'
+        actual_game_matrix = self.game_cont.get_matrix()
+        matrix_for_solver = [row[:] for row in actual_game_matrix]
+        
+        self.solver = Level1Solver(matrix_for_solver)
+        self.full_solution_matrix = self.solver.get_best_solution()
+
     # Helper function to open file dialog for loading saves
     def open_file_dialog(self, start_dir="."):
         root = tk.Tk()
@@ -56,6 +70,16 @@ class Level1UI:
         clock = pygame.time.Clock()
 
         while True:
+            seconds_passed = (pygame.time.get_ticks() - self.start_ticks) // 1000
+            if seconds_passed >= 1:
+                self.start_ticks = pygame.time.get_ticks()
+                if self.current_time_left > 0:
+                    self.current_time_left -= 1
+                else:
+                    self.gamestate.score = max(0, self.gamestate.score - 1)
+                
+                self.timer_box.set_text(f"Time: {self.current_time_left}")
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -77,7 +101,16 @@ class Level1UI:
                     # Updating game state for valid move and playing sound.
                     if self.game_cont.make_move(coords):
                         self.grid_main.set_matrix(self.game_cont.get_matrix())
-                        self.textbox_error.set_visible(False)
+                        # Check if blocked
+                        if self.game_cont.is_blocked():
+                            if self.full_solution_matrix:
+                                # Update the UI grid to show the solved version
+                                self.grid_main.set_matrix(self.full_solution_matrix)
+                                self.textbox_error.set_text(f"Game Over! No valid moves left. Here's a solution.")
+                            else:
+                                self.textbox_error.set_text("Game Over! No full solution was possible.")
+                            
+                            self.textbox_error.set_visible(True)
                         pygame.mixer.Sound.play(pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "successful_move_sound.mp3"))).set_volume(0.5)
                     # Handling invalid move with error message and sound.
                     else:
@@ -150,6 +183,7 @@ class Level1UI:
             self.button_clear.draw(screen)
             self.button_continue.draw(screen)
             self.button_load.draw(screen)
+            self.timer_box.draw(screen)
             self.inputbox_username.draw(screen)
             self.textbox_error.draw(screen)
             self.status_box.draw(screen)

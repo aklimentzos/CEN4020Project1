@@ -126,7 +126,64 @@ class Level2Controller:
             self.state.move_stack.append([grid_coords[0], grid_coords[1], 0])
             self.update_matrix(grid_coords)
             self.update_score()
+
+        if self.is_blocked():
+                self.state.fail_reason = "Blocked! No moves left for the next number."
         return True
+    
+    def is_blocked(self):
+        """
+        Checks if the next number to be placed (self.state.cur_num) 
+        has any valid moves available on the board.
+        """
+        # If we already finished the level, we aren't 'blocked'
+        if self.state.cur_num > 25:
+            return False
+
+        # Use existing helper to find potential spots for the NEXT number
+        possible_moves = self.get_level2_valid_moves(self.state.cur_num, self.state.matrix)
+        
+        # If the list is empty, it means no valid positions exist for the current number
+        return len(possible_moves) == 0
+    
+    def get_level2_valid_moves(self, current_num, matrix):
+        #Find the position of 'current_num' in the inner 5x5
+        anchor_pos = None
+        for r in range(1, 6):
+            for c in range(1, 6):
+                if matrix[r][c] == current_num:
+                    anchor_pos = (r, c)
+                    break
+        
+        if not anchor_pos:
+            return []
+
+        r_old, c_old = anchor_pos
+        valid_targets = []
+
+        # Check the outer frame (Row 0, Row 6, Col 0, Col 6)
+        # Check same row alignment
+        for col in [0, 6]:
+            if matrix[r_old][col] == 0:
+                valid_targets.append((r_old, col))
+                
+        # Check same column alignment
+        for row in [0, 6]:
+            if matrix[row][c_old] == 0:
+                valid_targets.append((row, c_old))
+
+        # Diagonal/Corner Logic
+        # Main diagonal (top-left to bottom-right)
+        if r_old == c_old:
+            if matrix[0][0] == 0: valid_targets.append((0, 0))
+            if matrix[6][6] == 0: valid_targets.append((6, 6))
+            
+        # Anti-diagonal (top-right to bottom-left)
+        if r_old + c_old == 6: # In the 5x5 indexed 1-5, sum is 6
+            if matrix[0][6] == 0: valid_targets.append((0, 6))
+            if matrix[6][0] == 0: valid_targets.append((6, 0))
+
+        return valid_targets
 
     def update_score(self):
         """Updates the score"""

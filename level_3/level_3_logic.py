@@ -79,6 +79,20 @@ class Level3Controller:
     # Level 3 rule helpers
     # ---------------------------
 
+    def is_blocked(self):
+        """Checks if there are no valid moves for the current number in the inner board."""
+        if self.state.cur_num > 25:
+            return False
+            
+        for r in range(1, 6):
+            for c in range(1, 6):
+                if self.state.matrix[r][c] == 0:
+                    if self.is_valid_move((r, c)):
+                        return False # Found at least one valid move
+        
+        self.state.fail_reason = f"Blocked! No valid inner spot for {self.state.cur_num}."
+        return True
+
     def _is_inner_cell(self, r, c):
         return 1 <= r <= 5 and 1 <= c <= 5
 
