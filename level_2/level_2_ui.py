@@ -15,11 +15,14 @@ from level_2.level_2_solver import Level2Solver
 
 
 class Level2UI:
-    def __init__(self, level2_state):
+    def __init__(self, level2_state, authenticated_user=""):
         self.board_width = 1000
         self.board_height = 800
         self.font = pygame.font.Font(None, 32)
-        self.inputbox_username = InputBox(750, 50, 210, 40, self.font, placeholder="Enter name...")
+        self.inputbox_username = InputBox(750, 50, 210, 40, self.font, placeholder="Enter name...", readonly=bool(authenticated_user))
+        self.inputbox_username.text = authenticated_user
+        self.username_locked = bool(authenticated_user)
+
         self.button_save = Button(750, 100, 100, 40, "Save", self.font)
         self.button_undo = Button(860, 100, 100, 40, "Undo", self.font)
         self.button_clear = Button(750, 150, 210, 40, "Clear Board", self.font)
@@ -31,11 +34,9 @@ class Level2UI:
         self.gamestate = level2_state
         self.game_cont = Level2Controller(self.gamestate)
         self.grid_main = Grid(7, 90, 50, 50, self.game_cont.get_matrix(), self.font)
-        self.username_locked = False
-        self.final_username = ""
 
         # Timer setup
-        self.timer_limit = 10
+        self.timer_limit = 60
         self.start_ticks = pygame.time.get_ticks()
         self.current_time_left = self.timer_limit
         self.timer_box = TextBox(600, 20, f"Time: {self.current_time_left}", self.font)
@@ -154,6 +155,8 @@ class Level2UI:
                             pygame.display.flip()
                         elif level == 1:
                             return ("switch_to_level1", path)
+                        elif level == 3:
+                            return ("switch_to_level3", path)
 
                 # Event handler for when the game is completed.
                 if self.gamestate.cur_num == 26:

@@ -9,25 +9,75 @@ from level_1.level_1_ui import Level1UI
 from level_2.level_2_ui import Level2UI
 from level_3.level_3_ui import Level3UI
 
+from authentication.auth_ui import AuthUI
+from main_menu.main_menu_ui import MainMenu
+from high_scores.high_scores_ui import HighScoresUI
+
 
 def main():
     pygame.init()
 
-    current_level = 1
+    auth = AuthUI()
+    username = auth.display()
 
-    level1_state = Level1State()
+    main_menu = MainMenu(authenticated_user=username)
+    main_return_code = main_menu.display()
+
+    current_level = 1
+    level1_state = None
     level2_state = None
     level3_state = None
+
+    high_score = HighScoresUI()
+    high_score_code = None
+
+    while True:
+        if main_return_code == "high_scores":
+            high_score_code = high_score.display()
+
+            if high_score_code == "back_to_menu":
+                main_menu = MainMenu(authenticated_user=username)
+                main_return_code = main_menu.display()
+                continue
+        else:
+            match main_return_code:
+                case "new_game":
+                    level1_state = Level1State()
+                    current_level = 1
+                    break
+                case ("switch_to_level_1", path):
+                    level1_state = Level1State()
+                    Level1Controller(level1_state).load_game(path)
+                    current_level = 1
+                    break
+                case ("switch_to_level_2", path):
+                    level1_state = Level1State()
+                    Level1Controller(level1_state).load_game(path)
+                    level2_state = Level2State(level1_state)
+                    Level2Controller(level2_state).load_game(path)
+                    current_level = 2
+                    break
+                case ("switch_to_level_3", path):
+                    level1_state = Level1State()
+                    Level1Controller(level1_state).load_game(path)
+                    level2_state = Level2State(level1_state)
+                    Level2Controller(level2_state).load_game(path)
+                    level3_state = Level3State(level2_state)
+                    Level3Controller(level3_state).load_game(path)
+                    current_level = 3
+                    break
+                case _:
+                    print(f"Unknown return code from main menu: {main_return_code}")
 
     while True:
         # Pick which UI to run
         if current_level == 1:
-            ui = Level1UI(level1_state)
+            ui = Level1UI(level1_state, authenticated_user=username)
 
         elif current_level == 2:
             if level2_state is None:
                 level2_state = Level2State(level1_state)
-            ui = Level2UI(level2_state)
+            ui = Level2UI(level2_state, authenticated_user=username)
 
         else:  # current_level == 3
             if level3_state is None:
@@ -35,7 +85,7 @@ def main():
                 if level2_state is None:
                     level2_state = Level2State(level1_state)
                 level3_state = Level3State(level2_state)
-            ui = Level3UI(level3_state)
+            ui = Level3UI(level3_state, authenticated_user=username)
 
         result = ui.display()
 

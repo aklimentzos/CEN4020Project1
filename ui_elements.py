@@ -1,10 +1,12 @@
 import pygame
 
 class InputBox:
-    def __init__(self, x, y, w, h, font, placeholder=""):
+    def __init__(self, x, y, w, h, font, placeholder="", is_password=False, readonly=False):
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.placeholder = placeholder
+        self.is_password = is_password
+        self.readonly = readonly
 
         self.text = ""
         self.active = False
@@ -12,6 +14,9 @@ class InputBox:
         self.cursor_timer = 0
 
     def handle_event(self, event):
+        if self.readonly:
+            return None
+        
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self.active = self.rect.collidepoint(event.pos)
 
@@ -47,7 +52,10 @@ class InputBox:
 
         # text (or placeholder)
         if self.text:
-            display = self.text
+            if self.is_password:
+                display = "*" * len(self.text)
+            else:
+                display = self.text
         elif self.active:
             display = ""
         else:
@@ -71,7 +79,6 @@ class InputBox:
     def value(self):
         return self.text
          
-           
 class Button:
     def __init__(self, x, y, w, h, text, font, callback=None, visible=True):
         self.rect = pygame.Rect(x, y, w, h)

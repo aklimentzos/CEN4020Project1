@@ -15,11 +15,14 @@ import json
 
 
 class Level1UI:
-    def __init__(self, gamestate):
+    def __init__(self, gamestate, authenticated_user=""):
         self.board_width = 900
         self.board_height = 700
         self.font = pygame.font.Font(None, 32)
-        self.inputbox_username = InputBox(600, 50, 210, 40, self.font, placeholder="Enter name...")
+        self.inputbox_username = InputBox(600, 50, 210, 40, self.font, placeholder="Enter name...", readonly=bool(authenticated_user))
+        self.inputbox_username.text = authenticated_user
+        self.username_locked = bool(authenticated_user)
+
         self.button_save = Button(600, 100, 100, 40, "Save", self.font)
         self.button_undo = Button(710, 100, 100, 40, "Undo", self.font)
         self.button_clear = Button(600, 150, 210, 40, "Clear Board", self.font)
@@ -30,11 +33,9 @@ class Level1UI:
         self.gamestate = gamestate
         self.game_cont = Level1Controller(self.gamestate)
         self.grid_main = Grid(5, 90, 50, 50, self.game_cont.get_matrix(), self.font)
-        self.username_locked = False
-        self.final_username = ""  
 
         # Timer setup
-        self.timer_limit = 10
+        self.timer_limit = 60
         self.start_ticks = pygame.time.get_ticks()
         self.current_time_left = self.timer_limit
         self.timer_box = TextBox(450, 20, f"Time: {self.current_time_left}", self.font)
@@ -156,6 +157,8 @@ class Level1UI:
                             pygame.display.flip()
                         elif level == 2:
                             return ("switch_to_level2", path)
+                        elif level == 3:
+                            return ("switch_to_level3", path)
 
                 # Event handler for when the game is completed.
                 if self.gamestate.cur_num >= 26:

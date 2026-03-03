@@ -1,0 +1,10 @@
+{
+    "test": {
+        "salt": "8cd83d850092025b8410e2f020b137e4",
+        "password": "aeca6508568b3e3ddf139da369b10e0c7ee8abedd3857b96f934ac414ae98711"
+    },
+    "test2": {
+        "salt": "ca1c21a4e8e064aae84fd9dfa6ba48a7",
+        "password": "969e971c8e47e2f881c88d452af559e3cca26c25709193a98dcd5c2d5843ed1b"
+    }
+}
