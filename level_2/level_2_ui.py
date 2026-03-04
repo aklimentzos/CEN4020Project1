@@ -110,33 +110,6 @@ class Level2UI:
                         # Updating game state for valid move and playing sound.
                         if self.game_cont.make_move(coords):
                             self.grid_main.set_matrix(self.game_cont.get_matrix())
-                            # Check if blocked
-                            if self.game_cont.is_blocked() and self.gamestate.cur_num <= 25:
-                                self.textbox_error.set_text("Game Over! No valid moves left. Here's a solution.")
-                                self.button_newgame.set_visible(True)
-                                self.textbox_error.set_visible(True)
-                                self.game_cont.clear_board() # Clear the board if blocked
-                                #Update solver's internal matrix to match the cleared board
-                                self.solver.matrix = [row[:] for row in self.game_cont.get_matrix()]
-    
-                                # Solve from the current state
-                                solution, mask = self.solver.find_best_solution()
-
-                                if solution is not None:
-                                    # Update logic state
-                                    self.gamestate.matrix = solution
-                                    # Update grid
-                                    self.grid_main.set_matrix(solution)
-                                    # Apply coloring mask
-                                    self.solve_mask = mask  
-                                    # Finish level
-                                    self.gamestate.cur_num = 26 
-                                else:
-                                    self.textbox_error.set_text("No solution possible from this state.")
-                                    self.textbox_error.set_visible(True)
-
-                                self.solved = True
-
                             pygame.mixer.Sound.play(pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "successful_move_sound.mp3"))).set_volume(0.5)
                         # Handling invalid move with error message and sound.
                         else:

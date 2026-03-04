@@ -108,19 +108,6 @@ class Level3UI:
                         if self.game_cont.make_move(coords):
                             self.grid_main.set_matrix(self.game_cont.get_matrix())
                             self.textbox_error.set_visible(False)
-                            if self.game_cont.is_blocked():
-                                self.textbox_error.set_text("Blocked! No moves left.")
-                                self.textbox_error.set_visible(True)
-                                self.game_cont.clear_board() 
-                                
-                                # Unpack the tuple
-                                full_solution, mask = self.solver.find_best_solution() 
-                                
-                                if full_solution:
-                                    self.solve_mask = mask
-                                    self.gamestate.cur_num = 26 # End the game
-                                    self.solved = True
-                                    self.grid_main.set_matrix(full_solution)
 
                             pygame.mixer.Sound.play(
                                 pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "successful_move_sound.mp3"))
@@ -146,6 +133,8 @@ class Level3UI:
                                 self.grid_main.set_matrix(full_solution)
                                 self.textbox_error.set_text("Puzzle solved from your current position!")
                                 self.textbox_error.set_visible(True)
+                                self.button_newgame.set_visible(True)
+                                self.button_exit.set_visible(True)
                             else:
                                 self.textbox_error.set_text("No valid solution found from this state.")
                                 self.textbox_error.set_visible(True)
@@ -210,12 +199,12 @@ class Level3UI:
                         self.button_newgame.set_visible(True)
                         self.button_exit.set_visible(True)
 
-                    if self.button_newgame.handle_event(event) == 'clicked':
-                        return ("switch_to_level1", None)
+                if self.button_newgame.handle_event(event) == 'clicked':
+                    return ("switch_to_level1", None)
 
-                    if self.button_exit.handle_event(event) == 'clicked':
-                        pygame.quit()
-                        sys.exit()
+                if self.button_exit.handle_event(event) == 'clicked':
+                    pygame.quit()
+                    sys.exit()
 
                 self.inputbox_username.handle_event(event)
             self.status_box.set_text(f"Score: {self.gamestate.score}       Cur Num: {self.gamestate.cur_num}")

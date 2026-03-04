@@ -6,5 +6,17 @@
     "test2": {
         "salt": "ca1c21a4e8e064aae84fd9dfa6ba48a7",
         "password": "969e971c8e47e2f881c88d452af559e3cca26c25709193a98dcd5c2d5843ed1b"
+    },
+    "Alex": {
+        "salt": "2cf9c2e8358c8b95331c9c3bf516eea8",
+        "password": "b300281d11632c4e79e0241deaab05d2230e30e5b7e5fd5b6fd48682b8cb6129"
+    },
+    "aleks": {
+        "salt": "38d9003769cb88526f6b49dc792c0ca9",
+        "password": "407ee893454f4ea48fc75547deb496b2821436f3f987e531e631b0cfc2adfe33"
+    },
+    "Jacob": {
+        "salt": "41e265d95a3d72963797aa1def90e1d2",
+        "password": "40a349a6dd343c940c0fcd675f546c17eb6f621e319e20c8390e22d4aaa814b0"
     }
 }
