@@ -28,7 +28,7 @@ class MainMenu:
         file_path = filedialog.askopenfilename(
             initialdir=start_dir,
             title="Select saved game",
-            filetypes=[("JSON save files", self.authenticated_user + "_*.json"), ("All files", "*.*")]
+            filetypes=[("JSON save files", "*.json"), ("All files", "*.*")]
         )
 
         root.destroy()
