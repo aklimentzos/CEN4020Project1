@@ -27,6 +27,7 @@ class Level1UI:
         self.button_undo = Button(710, 100, 100, 40, "Undo", self.font)
         self.button_clear = Button(600, 150, 210, 40, "Clear Board", self.font)
         self.button_continue = Button(300, 650, 210, 40, "Next Level", self.font, visible=False)
+        self.button_newgame = Button(300, 650, 210, 40, "New Game", self.font, visible=False)
         self.button_load = Button(600, 200, 210, 40, "Load Game", self.font)
         self.textbox_error = TextBox(100, 600, "", self.font, visible= False)
         self.status_box = TextBox(150, 20, f"Score: {gamestate.score}       Cur Num: {gamestate.cur_num}", self.font)
@@ -122,8 +123,10 @@ class Level1UI:
                                     # Update the UI grid to show the solved version
                                     self.grid_main.set_matrix(full_solution_matrix)
                                     self.textbox_error.set_text(f"Game Over! No valid moves left. Here's a solution.")
+                                    self.button_newgame.set_visible(True)
                                 else:
                                     self.textbox_error.set_text("Game Over! No full solution was possible.")
+                                    self.button_newgame.set_visible(True)
                                 self.textbox_error.set_visible(True)
                             pygame.mixer.Sound.play(pygame.mixer.Sound(str(self.game_cont.base_dir / "assets" / "successful_move_sound.mp3"))).set_volume(0.5)
                         # Handling invalid move with error message and sound.
@@ -193,8 +196,6 @@ class Level1UI:
                         elif level == 3:
                             return ("switch_to_level3", path)
 
-                
-                    
                 #Completion handling
                 if is_finished and not self.solved:
                     if not bonus_added:
@@ -214,6 +215,9 @@ class Level1UI:
                     # Event handler for if the user wishes to continue to the next level after completing the game.
                     if self.button_continue.handle_event(event) == 'clicked':
                         return ("switch_to_level2", None)
+                    
+                if self.button_newgame.handle_event(event) == 'clicked':
+                    return ("switch_to_level1", None)
 
             self.status_box.set_text( f"Score: {self.gamestate.score}       Cur Num: {self.gamestate.cur_num}")
 
@@ -222,6 +226,7 @@ class Level1UI:
             self.button_undo.draw(screen)
             self.button_clear.draw(screen)
             self.button_continue.draw(screen)
+            self.button_newgame.draw(screen)
             self.button_load.draw(screen)
             self.timer_box.draw(screen)
             self.button_solve.draw(screen)

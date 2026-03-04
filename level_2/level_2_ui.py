@@ -48,8 +48,6 @@ class Level2UI:
         self.solver = Level2Solver(self.game_cont.get_matrix())
         self.solve_mask = None
         self.solved = False
-        
-        
     
     # Helper function to open file dialog for loading saves
     def open_file_dialog(self, start_dir="."):
@@ -192,11 +190,12 @@ class Level2UI:
                         self.button_newgame.set_visible(True)
                         self.button_nextlevel.set_visible(True)
                     
-                    if self.button_nextlevel.handle_event(event) == 'clicked':
-                        return ("switch_to_level3", None)
-                    # Event handler for if the user wishes to play again after completing the game.
-                    if self.button_newgame.handle_event(event) == 'clicked':
-                        return ("switch_to_level1", None) 
+                if self.button_nextlevel.handle_event(event) == 'clicked':
+                    return ("switch_to_level3", None)
+
+                # Event handler for if the user wishes to play again after completing the game.
+                if self.button_newgame.handle_event(event) == 'clicked':
+                    return ("switch_to_level1", None) 
 
                     
                 # Event handler for loading a game.
